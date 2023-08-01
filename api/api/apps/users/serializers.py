@@ -22,12 +22,12 @@ class ApiUserCreateSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.EmailField()
+    username = serializers.CharField()
     password = serializers.CharField()
 
     def validate_user(self, validated_data):
         user = authenticate(
-            username=validated_data['email'],
+            username=validated_data['username'],
             password=validated_data['password']
         )
 

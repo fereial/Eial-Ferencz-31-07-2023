@@ -1,5 +1,5 @@
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -27,20 +27,22 @@ class CreateApiUserView(APIView):
 
 class LoginView(APIView):
     permission_classes = (AllowAny,)
+    authentication_classes = (BasicAuthentication,)
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
 
-        if serializer.is_valid():
-            user = serializer.validate_user(serializer.validated_data)
+        user = authenticate(
+            username=request.data['username'],
+            password=request.data['password']
+        )
 
-            if user:
-                api_user = login(request, user)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({"errors": 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        if user:
+            print("entro")
+            login(request, user)
+            serializer = ApiUserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error", "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutView(APIView):
