@@ -1,5 +1,5 @@
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import AllowAny
+from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from .serializers import NotificationSerializer
 from api.users.models import ApiUser
 from .models import Notification
-from api.receivers.models import Receiver
 
 
 class NotificationView(APIView):
@@ -38,9 +37,10 @@ class NotificationView(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        sent_notifications = Notification.objects.filter(sent_by=user)
-        receiver = Receiver.objects.get(email=user.email, user=user)
-        received_notifications = Notification.objects.filter(receiver=receiver)
+        sent_notifications = Notification.objects.filter(sent_by=user.email)
+
+        received_notifications = Notification.objects.filter(
+            receiver=user.email)
 
         sent_notifications_serializer = NotificationSerializer(
             sent_notifications, many=True)

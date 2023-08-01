@@ -22,6 +22,11 @@ class ApiUserCreateSerializer(serializers.ModelSerializer):
         }
 
 
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True, allow_blank=False)
+    password = serializers.CharField(required=True, allow_blank=False)
+
+
 class ApiUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ApiUser

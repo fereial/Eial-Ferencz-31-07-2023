@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from django.contrib.auth import authenticate, login, logout
-from .serializers import ApiUserSerializer, ApiUserCreateSerializer
+from .serializers import ApiUserSerializer, ApiUserCreateSerializer, LoginSerializer
 
 
 class CreateApiUserView(APIView):
@@ -29,17 +29,24 @@ class LoginView(APIView):
 
     def post(self, request):
 
-        user = authenticate(
-            username=request.data['username'],
-            password=request.data['password']
-        )
+        serializer = LoginSerializer(data=request.data)
+        print(serializer.is_valid())
+        if serializer.is_valid():
+            user = authenticate(
+                username=serializer.data.get('username'),
+                password=serializer.data.get('password')
+            )
 
-        if user:
-            login(request, user)
-            serializer = ApiUserSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            print(user)
+            if user:
+                login(request, user)
+                serializer = ApiUserSerializer(user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response({"error", "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutView(APIView):

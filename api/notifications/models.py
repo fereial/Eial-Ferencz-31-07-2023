@@ -8,13 +8,16 @@ class Notification (models.Model):
     subject = models.CharField(max_length=255)
     message = models.TextField()
 
-    sent_by = models.ForeignKey(
-        'users.ApiUser', on_delete=models.CASCADE, related_name='sent_notifications')
-    receiver = models.ForeignKey(
-        'receivers.Receiver', on_delete=models.CASCADE, related_name='notifications')
+    api_user = models.ForeignKey(
+        'users.ApiUser',
+        on_delete=models.CASCADE,
+        related_name='sent_notifications'
+    )
+
+    sent_by = models.EmailField()
+    received_by = models.EmailField()
 
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     @classmethod
     def create_instance(cls, validated_data):
