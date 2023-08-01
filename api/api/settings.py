@@ -47,7 +47,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'api.apps.users'
+    'users',
+    'notifications',
+    'receivers'
 ]
 
 MIDDLEWARE = [

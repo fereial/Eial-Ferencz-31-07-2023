@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from django.contrib.auth import authenticate, login, logout
-from .serializers import ApiUserSerializer, LoginSerializer, ApiUserCreateSerializer
+from .serializers import ApiUserSerializer, ApiUserCreateSerializer
 
 
 class CreateApiUserView(APIView):
@@ -16,9 +16,7 @@ class CreateApiUserView(APIView):
         serializer = ApiUserCreateSerializer(data=request.data)
         if serializer.is_valid():
             instance = serializer.save()
-            userToken = login(request, instance)
-            print(userToken)
-            print(serializer.data)
+            login(request, instance)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
@@ -37,7 +35,6 @@ class LoginView(APIView):
         )
 
         if user:
-            print("entro")
             login(request, user)
             serializer = ApiUserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)

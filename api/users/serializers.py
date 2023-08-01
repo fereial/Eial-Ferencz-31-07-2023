@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate
 
 
 class ApiUserCreateSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ApiUser
         fields = ['email', 'password', 'username']
@@ -19,22 +20,6 @@ class ApiUserCreateSerializer(serializers.ModelSerializer):
             'username': instance.username,
             'external_id': instance.external_id
         }
-
-
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
-
-    def validate_user(self, validated_data):
-        user = authenticate(
-            username=validated_data['username'],
-            password=validated_data['password']
-        )
-
-        if not user:
-            raise serializers.ValidationError("Invalid credentials")
-
-        return user
 
 
 class ApiUserSerializer(serializers.ModelSerializer):
