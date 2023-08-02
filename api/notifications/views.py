@@ -21,17 +21,18 @@ class NotificationView(APIView):
             return Response({"error": "Error finding the user"}, status=status.HTTP_401_UNAUTHORIZED)
 
         if external_id:
-            serializer = NotificationSerializer(data=request.data)
+            try:
+                notification = Notification.objects.get(
+                    sent_by=user.email,
+                    external_id=external_id
+                )
+
+            except Notification.DoesNotExist:
+                return Response({"error": "Error finding the message"}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = NotificationSerializer(notification)
+
             if serializer.is_valid():
-                try:
-                    notification = Notification.objects.get(
-                        sent_by=user,
-                        external_id=external_id
-                    )
-
-                except Notification.DoesNotExist:
-                    return Response({"error": "Error finding the message"}, status=status.HTTP_400_BAD_REQUEST)
-
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
