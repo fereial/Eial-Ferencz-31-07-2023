@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from .serializers import NotificationSerializer
-from api.users.models import ApiUser
+from users.models import ApiUser
 from .models import Notification
 
 
@@ -13,8 +13,7 @@ class NotificationView(APIView):
     permission_classes = (AllowAny,)
     authentication_classes = (BasicAuthentication,)
 
-    def get(self, request, external_id):
-        user_external_id = request.data.get('user_external_id')
+    def get(self, request, user_external_id=None, external_id=None):
         try:
             user = ApiUser.get_by_external_id(external_id=user_external_id)
 
@@ -40,7 +39,7 @@ class NotificationView(APIView):
         sent_notifications = Notification.objects.filter(sent_by=user.email)
 
         received_notifications = Notification.objects.filter(
-            receiver=user.email)
+            received_by=user.email)
 
         sent_notifications_serializer = NotificationSerializer(
             sent_notifications, many=True)
@@ -60,7 +59,7 @@ class NotificationView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, external_id):
+    def delete(self, request, user_external_id=None, external_id=None):
         user_external_id = request.data.get('user_external_id')
         try:
             user = ApiUser.get_by_external_id(external_id=user_external_id)
@@ -71,7 +70,6 @@ class NotificationView(APIView):
         if external_id:
             try:
                 notification = Notification.objects.get(
-                    sent_by=user,
                     external_id=external_id
                 )
 

@@ -8,12 +8,6 @@ class Notification (models.Model):
     subject = models.CharField(max_length=255)
     message = models.TextField()
 
-    api_user = models.ForeignKey(
-        'users.ApiUser',
-        on_delete=models.CASCADE,
-        related_name='sent_notifications'
-    )
-
     sent_by = models.EmailField()
     received_by = models.EmailField()
 
