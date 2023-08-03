@@ -23,7 +23,7 @@ class NotificationView(APIView):
         if external_id:
             try:
                 notification = Notification.objects.get(
-                    sent_by=user.email,
+                    api_user=user,
                     external_id=external_id
                 )
 
@@ -32,10 +32,7 @@ class NotificationView(APIView):
 
             serializer = NotificationSerializer(notification)
 
-            if serializer.is_valid():
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         sent_notifications = Notification.objects.filter(sent_by=user.email)
 
@@ -52,8 +49,15 @@ class NotificationView(APIView):
             'received_notifications': received_notifications_serializer.data
         }, status=status.HTTP_200_OK)
 
-    def post(self, request):
-        serializer = NotificationSerializer(data=request.data)
+    def post(self, request, user_external_id=None):
+        try:
+            api_user = ApiUser.get_by_external_id(external_id=user_external_id)
+
+        except ApiUser.DoesNotExist:
+            return Response({"error": "Error finding the user"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = NotificationSerializer(
+            data=request.data, context={"api_user": api_user})
         if serializer.is_valid():
             instance = serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -61,7 +65,6 @@ class NotificationView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, user_external_id=None, external_id=None):
-        user_external_id = request.data.get('user_external_id')
         try:
             user = ApiUser.get_by_external_id(external_id=user_external_id)
 
@@ -71,6 +74,7 @@ class NotificationView(APIView):
         if external_id:
             try:
                 notification = Notification.objects.get(
+                    api_user=user,
                     external_id=external_id
                 )
 
@@ -78,6 +82,7 @@ class NotificationView(APIView):
                 return Response({"error": "Error finding the message"}, status=status.HTTP_400_BAD_REQUEST)
 
             notification.delete()
-            return Response(status=status.HTTP_200_OK)
+
+            return Response({"message": "Message deleted successfully"}, status=status.HTTP_200_OK)
 
         return Response({"error": "Error finding the message"}, status=status.HTTP_400_BAD_REQUEST)

@@ -10,6 +10,10 @@ class NotificationSerializer(ModelSerializer):
         fields = ['subject', 'message', 'sent_by', 'received_by']
         extra_kwargs = {'sender': {'write_only': True}}
 
+    def create(self, validated_data):
+        validated_data["api_user"] = self.context["api_user"]
+        return Notification.objects.create(**validated_data)
+
     def to_representation(self, instance):
         return {
             'subject': instance.subject,
