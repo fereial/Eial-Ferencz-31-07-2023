@@ -60,7 +60,6 @@ export default function NotificationMessage({
 
 	useEffect(() => {
 		if (typeof external_id !== "undefined" && !isCreate) {
-			console.log("fetch");
 			const fetchNotifications = async () => {
 				const response = await fetch(
 					`http://localhost:8000/api/v1/notifications/notifications/${currentUser.external_id}/${external_id}`,

@@ -2,21 +2,21 @@ import { useState } from "react";
 
 import { Button, Card, Col, Form, Row, Spinner, Stack } from "react-bootstrap";
 import { ApiUser } from "../App";
-import { Link } from "react-router-dom";
 
-type LoginProps = {
+type SignUpProps = {
 	setCurrentApiUser: (apiUser: ApiUser) => void;
 };
 
 type Error = {
 	username: string | null;
+	email: string | null;
 	password: string | null;
-	error: string | null;
 };
 
-export default function Login({ setCurrentApiUser }: LoginProps) {
-	const [password, setPassword] = useState("");
+export default function SignUp({ setCurrentApiUser }: SignUpProps) {
 	const [username, setUsername] = useState("");
+	const [password, setPassword] = useState("");
+	const [email, setEmail] = useState("");
 	const [error, setError] = useState<Error>();
 	const [loading, setLoading] = useState(false);
 
@@ -27,7 +27,7 @@ export default function Login({ setCurrentApiUser }: LoginProps) {
 			setError(undefined);
 			setLoading(true);
 			const response = await fetch(
-				"http://localhost:8000/api/v1/users/login/",
+				"http://localhost:8000/api/v1/users/create_api_user/",
 				{
 					method: "POST",
 					headers: {
@@ -36,34 +36,16 @@ export default function Login({ setCurrentApiUser }: LoginProps) {
 					body: JSON.stringify({
 						username,
 						password,
+						email,
 					}),
 				}
 			);
 
 			const data = await response.json();
 			setLoading(false);
-			if (response.status === 400) {
-				setError({
-					username: data.username,
-					password: data.password,
-					error: data.error,
-				});
-			} else if (response.status === 500) {
-				console.log("data: ", data);
-				setError({
-					username: null,
-					password: null,
-					error: "Server error",
-				});
+			if (response.status !== 200) {
+				setError(data);
 			} else {
-				console.log("data: ", data);
-				setError({
-					username: null,
-					password: null,
-					error: "Unexpected error",
-				});
-			}
-			if (response.ok) {
 				localStorage.setItem("currentUser", JSON.stringify(data));
 				setCurrentApiUser(data);
 				window.location.href = "/";
@@ -77,7 +59,7 @@ export default function Login({ setCurrentApiUser }: LoginProps) {
 	return (
 		<Card className='p-4'>
 			<Card.Body>
-				<Card.Title>Login</Card.Title>
+				<Card.Title>Sign Up</Card.Title>
 				<Form onSubmit={handleSubmit}>
 					<Stack gap={4}>
 						<Row>
@@ -95,6 +77,25 @@ export default function Login({ setCurrentApiUser }: LoginProps) {
 									{error?.username && (
 										<Form.Text className='text-danger'>
 											{error.username}
+										</Form.Text>
+									)}
+								</Form.Group>
+							</Col>
+
+							<Col>
+								<Form.Group controlId='email'>
+									<Form.Label>Email</Form.Label>
+									<Form.Control
+										type='text'
+										name='email'
+										value={email}
+										onChange={(e) =>
+											setEmail(e.target.value)
+										}
+									/>
+									{error?.email && (
+										<Form.Text className='text-danger'>
+											{error.email}
 										</Form.Text>
 									)}
 								</Form.Group>
@@ -119,20 +120,7 @@ export default function Login({ setCurrentApiUser }: LoginProps) {
 											{error.password}
 										</Form.Text>
 									)}
-
-									{error && (
-										<Form.Text className='text-danger'>
-											{error.error}
-										</Form.Text>
-									)}
 								</Form.Group>
-							</Col>
-						</Row>
-						<Row>
-							<Col>
-								<Link to='/sign-up'>
-									Don't have an account? Sign up here!
-								</Link>
 							</Col>
 						</Row>
 
@@ -148,7 +136,7 @@ export default function Login({ setCurrentApiUser }: LoginProps) {
 									</span>
 								</Spinner>
 							)) ||
-								"Login"}
+								"Sign Up"}
 						</Button>
 					</Stack>
 				</Form>
